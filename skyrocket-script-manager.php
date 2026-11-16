@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Skyrocket script manager
+ * Plugin Name: Skyrocket Script Manager
  * Description: Manage individual JavaScript snippets with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.0.2
+ * Version: 1.1.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Biddenham Society
@@ -11,8 +11,10 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
 // Plugin version constant, used for cache-busting CSS and JavaScript.
-define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.0.2');
+define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.1.0');
+define('SKYROCKET_SCRIPT_MANAGER_PATH', plugin_dir_path(__FILE__));
 
 class Individual_JS_Snippets
 {
@@ -50,15 +52,76 @@ class Individual_JS_Snippets
         add_action('wp_footer', [$this, 'inject_snippets_footer'], 99);
     }
 
-    /* ---------------------------------------------------------------
-- Helpers
-- ------------------------------------------------------------- */
-
     /**
-- Who may create/edit/assign snippets. Requires admin-level rights AND the
-- unfiltered_html capability, so DISALLOW_UNFILTERED_HTML and multisite
-- site-admin restrictions are respected. Filterable via 'ijs_user_can_manage'.
+     * Fired upon plugin activation. Scans the default-scripts directory and seeds drafts.
      */
+    public static function activate()
+    {
+        // Register CPT immediately so wp_insert_post recognizes 'js_snippet' during activation flow
+        $instance = new self();
+        $instance->register_snippet_cpt();
+
+        $defaults_dir = SKYROCKET_SCRIPT_MANAGER_PATH . 'default-scripts/';
+        if (!is_dir($defaults_dir)) {
+            return;
+        }
+
+        $folders = scandir($defaults_dir);
+        if ($folders === false) {
+            return;
+        }
+
+        foreach ($folders as $folder) {
+            if ($folder === '.' || $folder === '..') {
+                continue;
+            }
+
+            $folder_path = $defaults_dir . $folder;
+            if (!is_dir($folder_path)) {
+                continue;
+            }
+
+            $script_file = $folder_path . '/' . $folder . '.js';
+            if (!file_exists($script_file) || !is_readable($script_file)) {
+                continue;
+            }
+
+            // Check if a snippet with this slug/title already exists to prevent duplication on reactivation
+            $title = ucwords(str_replace(['-', '_'], ' ', $folder));
+            $existing = get_page_by_path($folder, OBJECT, self::CPT);
+
+            if ($existing) {
+                continue;
+            }
+
+            $code = file_get_contents($script_file);
+            if ($code === false) {
+                $code = '';
+            }
+
+            // Insert as Draft
+            $post_id = wp_insert_post([
+                'post_type' => self::CPT,
+                'post_title' => $title,
+                'post_name' => $folder,
+                'post_status' => 'draft',
+                'post_content' => '',
+            ]);
+
+            if ($post_id && !is_wp_error($post_id)) {
+                // Populate default meta fields
+                update_post_meta($post_id, '_js_snippet_code', wp_slash($code));
+                update_post_meta($post_id, '_js_snippet_description', 'Default template script installed automatically.');
+                update_post_meta($post_id, '_js_snippet_location', 'footer');
+                update_post_meta($post_id, '_js_snippet_target_type', 'sitewide');
+            }
+        }
+    }
+
+    /* ---------------------------------------------------------------
+    - Helpers
+    - ------------------------------------------------------------- */
+
     private function user_can_manage($user_id = 0)
     {
         $user_id = $user_id ? (int) $user_id : get_current_user_id();
@@ -85,7 +148,6 @@ class Individual_JS_Snippets
         return array_values($types);
     }
 
-    /** Post types the block-editor panel can handle (needs REST + custom-fields support). */
     private function get_panel_post_types()
     {
         $out = [];
@@ -113,7 +175,6 @@ class Individual_JS_Snippets
         return $this->published_snippets;
     }
 
-    /** Shared sanitiser: used by REST saves, update_post_meta() and the classic save. */
     public function sanitize_assigned($value)
     {
         if (!is_array($value)) {
@@ -122,7 +183,6 @@ class Individual_JS_Snippets
         $out = [];
         foreach ($value as $id) {
             $id = absint($id);
-            // Ensure the snippet exists, is our CPT, and is strictly published
             if ($id && get_post_type($id) === self::CPT && get_post_status($id) === 'publish') {
                 $out[$id] = $id;
             }
@@ -131,8 +191,8 @@ class Individual_JS_Snippets
     }
 
     /* ---------------------------------------------------------------
-- CPT
-- ------------------------------------------------------------- */
+    - CPT
+    - ------------------------------------------------------------- */
 
     public function register_snippet_cpt()
     {
@@ -158,8 +218,6 @@ class Individual_JS_Snippets
             'show_in_rest' => false,
             'menu_icon' => 'dashicons-code-standards',
             'supports' => ['title'],
-            // Lock the whole post type to administrators. Default 'post' caps would
-            // let Contributors/Authors create snippets, i.e. run JS site-wide.
             'capability_type' => 'post',
             'map_meta_cap' => true,
             'capabilities' => [
@@ -177,11 +235,6 @@ class Individual_JS_Snippets
         ]);
     }
 
-    /**
-- Register the assignment list as real post meta exposed to the REST API.
-- This is what the block editor panel reads/writes, and it is the model
-- WordPress is steering plugins towards (instead of classic meta boxes).
-     */
     public function register_assignment_meta()
     {
         foreach ($this->get_assignable_post_types() as $pt) {
@@ -207,8 +260,8 @@ class Individual_JS_Snippets
     }
 
     /* ---------------------------------------------------------------
-- Snippet edit screen
-- ------------------------------------------------------------- */
+    - Snippet edit screen
+    - ------------------------------------------------------------- */
 
     public function add_snippet_meta_boxes()
     {
@@ -256,11 +309,6 @@ class Individual_JS_Snippets
                 <option value="specific" <?php selected($target_type, 'specific'); ?>>Assigned via Post/Page Editor</option>
             </select>
         </p>
-
-        <p class="description">
-            "Entire Site" runs everywhere. "Assigned via Post/Page Editor" runs only where you tick it in the editor sidebar.
-            The snippet must be Published to appear there. Body Open requires a theme that calls wp_body_open().
-        </p>
         <?php
     }
 
@@ -305,19 +353,13 @@ class Individual_JS_Snippets
         update_post_meta($post_id, '_js_snippet_target_type', $target);
     }
 
-    /* ---------------------------------------------------------------
-- Admin list columns
-- ------------------------------------------------------------- */
-
     public function add_snippet_columns($columns)
     {
-        // Strip out any accidental image or featured image columns injected by other plugins or themes
         unset($columns['image'], $columns['featured_image'], $columns['column-image']);
 
         $new_columns = [];
         foreach ($columns as $key => $title) {
             $new_columns[$key] = $title;
-            // Insert description column right after the title column
             if ($key === 'title') {
                 $new_columns['snippet_description'] = 'Description';
             }
@@ -332,10 +374,6 @@ class Individual_JS_Snippets
             echo $description ? nl2br(esc_html($description)) : '<span style="color:#72777c;">—</span>';
         }
     }
-
-    /* ---------------------------------------------------------------
-- Block editor panel (primary assignment UI)
-- ------------------------------------------------------------- */
 
     public function enqueue_editor_panel()
     {
@@ -367,13 +405,7 @@ class Individual_JS_Snippets
         ];
 
         $handle = 'ijs-editor-panel';
-        wp_register_script(
-            $handle,
-            false,
-            ['wp-plugins', 'wp-editor', 'wp-element', 'wp-data', 'wp-components'],
-            self::VERSION,
-            true
-        );
+        wp_register_script($handle, false, ['wp-plugins', 'wp-editor', 'wp-element', 'wp-data', 'wp-components'], self::VERSION, true);
         wp_enqueue_script($handle);
 
         wp_add_inline_script(
@@ -441,10 +473,6 @@ class Individual_JS_Snippets
 JS;
     }
 
-    /* ---------------------------------------------------------------
-- Classic editor fallback (hidden in the block editor)
-- ------------------------------------------------------------- */
-
     public function add_post_assignment_meta_boxes()
     {
         if (!$this->user_can_manage()) {
@@ -469,7 +497,6 @@ JS;
         wp_nonce_field('assign_js_save_meta', 'assign_js_nonce');
 
         $all_snippets = $this->get_published_snippets();
-
         $assigned = get_post_meta($post->ID, self::ASSIGN_META, true);
         $assigned = is_array($assigned) ? array_map('intval', $assigned) : [];
 
@@ -525,15 +552,10 @@ JS;
         }
     }
 
-    /* ---------------------------------------------------------------
-- Frontend injection
-- ------------------------------------------------------------- */
-
     private function render_snippets_for_location($location_name)
     {
         $snippets_to_run = [];
 
-        // 1. Snippets assigned to the current singular post/page
         if (is_singular()) {
             $current_post_id = get_queried_object_id();
             $assigned_ids = $current_post_id ? get_post_meta($current_post_id, self::ASSIGN_META, true) : [];
@@ -552,7 +574,6 @@ JS;
             }
         }
 
-        // 2. Site-wide snippets
         foreach ($this->get_published_snippets() as $snippet) {
             if (
                 get_post_status($snippet->ID) === 'publish' &&
@@ -563,7 +584,6 @@ JS;
             }
         }
 
-        // 3. Output
         foreach ($snippets_to_run as $id => $code) {
             if (is_string($code) && trim($code) !== '') {
                 echo "<!-- JS Snippet: " . esc_html(get_the_title($id)) . " -->\n";
@@ -585,5 +605,8 @@ JS;
         $this->render_snippets_for_location('footer');
     }
 }
+
+// Register plugin activation hook
+register_activation_hook(__FILE__, ['Individual_JS_Snippets', 'activate']);
 
 new Individual_JS_Snippets();

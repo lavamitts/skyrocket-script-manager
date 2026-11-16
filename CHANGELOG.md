@@ -12,3 +12,6 @@
 
 - Addition of build and update tools
 
+## 1.1.0 - Additional of default script capability
+
+- Additional of default script capability - initial script is regex abbreviation replacement for specifiable terms.
