@@ -59,7 +59,7 @@ fi
 # Validate GitHub Updater dependency
 # --------------------------------------------------
 
-UPDATER_FILE="includes/Updater.php"
+UPDATER_FILE="includes/plugin-updater.php"
 
 if [[ ! -f "$UPDATER_FILE" ]]; then
     echo -e "${RED}Error:${RESET} Could not find ${UPDATER_FILE}."
