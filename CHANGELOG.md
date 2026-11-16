@@ -20,10 +20,15 @@
 
 - Addition of new window script with CSS enqueuing
 
-## 1.3.0 - Finalisation of builf and update tools
+## 1.3.0 - Finalisation of build and update tools
 
 - Finalisation of build and update tools
 
 ## 1.3.0 - Move to using composer and dependabot for code updater versioning
 
 - Move to using composer and dependabot for code updater versioning
+
+## 1.4.0 - Genericise the update process
+
+- Remove namespacing from update functions
+- Remove tokens
