@@ -15,3 +15,7 @@
 ## 1.1.0 - Additional of default script capability
 
 - Additional of default script capability - initial script is regex abbreviation replacement for specifiable terms.
+
+## 1.2.0 - Additional of new window script with CSS enqueuing
+
+- Additional of new window script with CSS enqueuing

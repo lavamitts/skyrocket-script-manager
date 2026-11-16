@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Skyrocket Script Manager
- * Description: Manage individual JavaScript snippets with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.1.0
+ * Description: Manage individual JavaScript snippets (with optional CSS) with site-wide targeting or assignment via a post/page editor panel.
+ * Version: 1.2.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Biddenham Society
@@ -13,17 +13,20 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin version constant, used for cache-busting CSS and JavaScript.
-define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.1.0');
+define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.2.0');
 define('SKYROCKET_SCRIPT_MANAGER_PATH', plugin_dir_path(__FILE__));
 
 class Individual_JS_Snippets
 {
     const CPT = 'js_snippet';
     const ASSIGN_META = '_assigned_js_snippets';
-    const VERSION = '3.0.3';
+    const VERSION = '3.1.0';
 
     /** @var WP_Post[]|null Per-request cache of published snippets */
     private $published_snippets = null;
+
+    /** @var int[]|null Per-request cache of snippet IDs active on this request */
+    private $active_ids = null;
 
     public function __construct()
     {
@@ -47,6 +50,7 @@ class Individual_JS_Snippets
         add_action('save_post', [$this, 'save_post_assignment_meta'], 10, 2);
 
         // Frontend injection
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_snippet_styles']);
         add_action('wp_head', [$this, 'inject_snippets_header'], 99);
         add_action('wp_body_open', [$this, 'inject_snippets_body'], 99);
         add_action('wp_footer', [$this, 'inject_snippets_footer'], 99);
@@ -114,6 +118,15 @@ class Individual_JS_Snippets
                 update_post_meta($post_id, '_js_snippet_description', 'Default template script installed automatically.');
                 update_post_meta($post_id, '_js_snippet_location', 'footer');
                 update_post_meta($post_id, '_js_snippet_target_type', 'sitewide');
+
+                // Seed bundled CSS, if the snippet ships with one
+                $css_file = $folder_path . '/' . $folder . '.css';
+                if (file_exists($css_file) && is_readable($css_file)) {
+                    $css = file_get_contents($css_file);
+                    if ($css !== false) {
+                        update_post_meta($post_id, '_js_snippet_css', wp_slash($css));
+                    }
+                }
             }
         }
     }
@@ -273,10 +286,16 @@ class Individual_JS_Snippets
     {
         wp_nonce_field('js_snippet_save_meta', 'js_snippet_nonce');
         $code = get_post_meta($post->ID, '_js_snippet_code', true);
+        $css = get_post_meta($post->ID, '_js_snippet_css', true);
         ?>
         <p>Paste your JavaScript code below. Do not include script tags.</p>
         <textarea name="js_snippet_code" rows="12"
             style="width:100%; font-family:monospace;"><?php echo esc_textarea($code); ?></textarea>
+
+        <p style="margin-top:16px;"><strong>Optional CSS</strong><br>
+            Loaded on the same pages as this snippet. Do not include style tags.</p>
+        <textarea name="js_snippet_css" rows="8"
+            style="width:100%; font-family:monospace;"><?php echo esc_textarea($css); ?></textarea>
         <?php
     }
 
@@ -333,6 +352,11 @@ class Individual_JS_Snippets
         if (isset($_POST['js_snippet_code'])) {
             $code = wp_unslash($_POST['js_snippet_code']);
             update_post_meta($post_id, '_js_snippet_code', wp_slash($code));
+        }
+
+        if (isset($_POST['js_snippet_css'])) {
+            $css = wp_unslash($_POST['js_snippet_css']);
+            update_post_meta($post_id, '_js_snippet_css', wp_slash($css));
         }
 
         if (isset($_POST['js_snippet_description'])) {
@@ -552,39 +576,72 @@ JS;
         }
     }
 
-    private function render_snippets_for_location($location_name)
+    /* ---------------------------------------------------------------
+    - Frontend output
+    - ------------------------------------------------------------- */
+
+    /**
+     * IDs of published snippets that apply to the current request:
+     * those assigned to the current singular post, plus all sitewide ones.
+     * Shared by CSS enqueueing and JS injection.
+     *
+     * @return int[]
+     */
+    private function get_active_snippet_ids()
     {
-        $snippets_to_run = [];
+        if (null !== $this->active_ids) {
+            return $this->active_ids;
+        }
+
+        $ids = [];
 
         if (is_singular()) {
             $current_post_id = get_queried_object_id();
-            $assigned_ids = $current_post_id ? get_post_meta($current_post_id, self::ASSIGN_META, true) : [];
-
-            if (is_array($assigned_ids)) {
-                foreach ($assigned_ids as $snippet_id) {
+            $assigned = $current_post_id ? get_post_meta($current_post_id, self::ASSIGN_META, true) : [];
+            if (is_array($assigned)) {
+                foreach ($assigned as $snippet_id) {
                     $snippet_id = (int) $snippet_id;
                     if (
                         get_post_type($snippet_id) === self::CPT &&
-                        get_post_status($snippet_id) === 'publish' &&
-                        $this->get_location($snippet_id) === $location_name
+                        get_post_status($snippet_id) === 'publish'
                     ) {
-                        $snippets_to_run[$snippet_id] = get_post_meta($snippet_id, '_js_snippet_code', true);
+                        $ids[$snippet_id] = $snippet_id;
                     }
                 }
             }
         }
 
         foreach ($this->get_published_snippets() as $snippet) {
-            if (
-                get_post_status($snippet->ID) === 'publish' &&
-                $this->get_target_type($snippet->ID) === 'sitewide' &&
-                $this->get_location($snippet->ID) === $location_name
-            ) {
-                $snippets_to_run[$snippet->ID] = get_post_meta($snippet->ID, '_js_snippet_code', true);
+            if ($this->get_target_type($snippet->ID) === 'sitewide') {
+                $ids[$snippet->ID] = (int) $snippet->ID;
             }
         }
 
-        foreach ($snippets_to_run as $id => $code) {
+        $this->active_ids = array_values($ids);
+        return $this->active_ids;
+    }
+
+    public function enqueue_snippet_styles()
+    {
+        foreach ($this->get_active_snippet_ids() as $id) {
+            $css = get_post_meta($id, '_js_snippet_css', true);
+            if (!is_string($css) || trim($css) === '') {
+                continue;
+            }
+            $handle = 'ijs-snippet-css-' . $id;
+            wp_register_style($handle, false, [], self::VERSION);
+            wp_enqueue_style($handle);
+            wp_add_inline_style($handle, $css);
+        }
+    }
+
+    private function render_snippets_for_location($location_name)
+    {
+        foreach ($this->get_active_snippet_ids() as $id) {
+            if ($this->get_location($id) !== $location_name) {
+                continue;
+            }
+            $code = get_post_meta($id, '_js_snippet_code', true);
             if (is_string($code) && trim($code) !== '') {
                 echo "<!-- JS Snippet: " . esc_html(get_the_title($id)) . " -->\n";
                 wp_print_inline_script_tag($code);
