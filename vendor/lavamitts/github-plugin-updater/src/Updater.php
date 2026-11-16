@@ -13,12 +13,6 @@ class Updater
     private string $transientKey;
     private int $cacheTtl;
 
-    /**
-     * @param string      $pluginFile  Full path to the main plugin file (__FILE__).
-     * @param string      $githubRepo  GitHub repository in 'owner/repo' format.
-     * @param string|null $accessToken Optional GitHub PAT for private repositories.
-     * @param int         $cacheTtl    Cache duration in seconds (default 6 hours).
-     */
     public function __construct(
         string $pluginFile,
         string $githubRepo,
@@ -36,6 +30,106 @@ class Updater
         add_filter('plugins_api', [$this, 'pluginInfo'], 10, 3);
         add_filter('http_request_args', [$this, 'addAuthHeader'], 10, 2);
         add_action('upgrader_process_complete', [$this, 'clearCache'], 10, 2);
+
+        // Add "Check for updates" link on Plugins page & handle manual check
+        add_filter('plugin_row_meta', [$this, 'addCheckUpdateLink'], 10, 2);
+        add_action('admin_init', [$this, 'handleManualCheck']);
+        add_action('admin_notices', [$this, 'renderAdminNotice']);
+    }
+
+    /**
+     * Add a "Check for updates" link in the plugin's row meta on the Plugins screen.
+     */
+    public function addCheckUpdateLink(array $links, string $file): array
+    {
+        if ($file === $this->pluginSlug && current_user_can('update_plugins')) {
+            $url = wp_nonce_url(
+                add_query_arg([
+                    'gh_check_update' => $this->pluginSlug,
+                ], admin_url('plugins.php')),
+                'gh_check_update_' . $this->pluginSlug
+            );
+
+            $links[] = sprintf('<a href="%s">Check for updates</a>', esc_url($url));
+        }
+
+        return $links;
+    }
+
+    /**
+     * Clear the cached GitHub response and force WordPress to re-check updates.
+     */
+    public function handleManualCheck(): void
+    {
+        if (($_GET['gh_check_update'] ?? '') !== $this->pluginSlug) {
+            return;
+        }
+
+        check_admin_referer('gh_check_update_' . $this->pluginSlug);
+
+        if (!current_user_can('update_plugins')) {
+            return;
+        }
+
+        delete_transient($this->transientKey);
+        wp_update_plugins();
+
+        $updates = get_site_transient('update_plugins');
+        $hasUpdate = is_object($updates) && isset($updates->response[$this->pluginSlug]);
+        $status = $hasUpdate ? 'available' : 'current';
+
+        $redirectUrl = add_query_arg(
+            [
+                'gh_update_status' => $status,
+                'gh_plugin' => $this->pluginSlug,
+            ],
+            remove_query_arg(['gh_check_update', '_wpnonce'])
+        );
+
+        wp_safe_redirect($redirectUrl);
+        exit;
+    }
+
+    /**
+     * Render a standard WordPress admin notice after a manual update check.
+     */
+    public function renderAdminNotice(): void
+    {
+        if (($_GET['gh_plugin'] ?? '') !== $this->pluginSlug) {
+            return;
+        }
+
+        $status = $_GET['gh_update_status'] ?? '';
+        if ($status === '') {
+            return;
+        }
+
+        if (!function_exists('get_plugin_data')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $pluginData = get_plugin_data($this->pluginFile, false, false);
+        $pluginName = $pluginData['Name'] ?: dirname($this->pluginSlug);
+
+        if ($status === 'available') {
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                sprintf(
+                    /* translators: %s: Plugin name */
+                    esc_html__('An update is available for %s.', 'default'),
+                    '<strong>' . esc_html($pluginName) . '</strong>'
+                )
+            );
+        } elseif ($status === 'current') {
+            printf(
+                '<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+                sprintf(
+                    /* translators: %s: Plugin name */
+                    esc_html__('%s is up to date.', 'default'),
+                    '<strong>' . esc_html($pluginName) . '</strong>'
+                )
+            );
+        }
     }
 
     /**

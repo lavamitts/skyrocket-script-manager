@@ -4,20 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "447f86dc538840f2d8a5fade8db016a1",
-    "packages": [
+    "content-hash": "eeba6e0ab0d3cd7c3b5b2117436bf472",
+    "packages": [],
+    "packages-dev": [
         {
             "name": "lavamitts/github-plugin-updater",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lavamitts/github-plugin-updater.git",
-                "reference": "f1df3e8ce6f7ae389e982f2445174827db3f24c6"
+                "reference": "3264e82d14b4d6bab0479b616f893b93a978ba8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lavamitts/github-plugin-updater/zipball/f1df3e8ce6f7ae389e982f2445174827db3f24c6",
-                "reference": "f1df3e8ce6f7ae389e982f2445174827db3f24c6",
+                "url": "https://api.github.com/repos/lavamitts/github-plugin-updater/zipball/3264e82d14b4d6bab0479b616f893b93a978ba8a",
+                "reference": "3264e82d14b4d6bab0479b616f893b93a978ba8a",
                 "shasum": ""
             },
             "require": {
@@ -34,13 +35,12 @@
             ],
             "description": "Minimal single-file GitHub release asset updater for WordPress plugins.",
             "support": {
-                "source": "https://github.com/lavamitts/github-plugin-updater/tree/1.0.0",
+                "source": "https://github.com/lavamitts/github-plugin-updater/tree/1.0.1",
                 "issues": "https://github.com/lavamitts/github-plugin-updater/issues"
             },
-            "time": "2026-11-16T17:46:49+00:00"
+            "time": "2026-11-16T21:07:30+00:00"
         }
     ],
-    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

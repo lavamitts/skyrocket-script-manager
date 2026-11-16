@@ -32,3 +32,9 @@
 
 - Remove namespacing from update functions
 - Remove tokens
+
+## 1.4.1 - Include v. 1.0.1 of the updater plugin
+
+- Check for update feature appears on the plugins page in WordPress.
+- Messaging is visible when there is or is not an update to install.
+
