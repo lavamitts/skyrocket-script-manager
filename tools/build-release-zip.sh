@@ -8,6 +8,7 @@ set -euo pipefail
 # Constants
 # --------------------------------------------------
 
+# Text colours.
 RESET='\033[0m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -56,26 +57,22 @@ if [[ ! -f "$CHANGELOG_FILE" ]]; then
 fi
 
 # --------------------------------------------------
-# Validate updater dependencies
+# Validate Plugin Update Checker dependency
 # --------------------------------------------------
 
-# The generic GitHub updater must be present.
-if [[ ! -f "includes/updater.php" ]]; then
-    echo "Error: Could not find includes/updater.php."
-    exit 1
-fi
+# Standalone PUC bootstrap.
+PUC_BOOTSTRAP="vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php"
 
-# Composer autoloader must exist.
-if [[ ! -f "vendor/autoload.php" ]]; then
-    echo "Error: Could not find vendor/autoload.php."
+if [[ ! -f "$PUC_BOOTSTRAP" ]]; then
+    echo "Error: Could not find ${PUC_BOOTSTRAP}."
     echo "Run composer install before building the distribution."
     exit 1
 fi
 
-# Ensure the Composer autoloader is committed.
-if ! git ls-files --error-unmatch vendor/autoload.php >/dev/null 2>&1; then
-    echo "Error: vendor/autoload.php is not tracked by Git."
-    echo "Commit the vendor directory so it is included in the distribution."
+# Ensure the PUC bootstrap is committed.
+if ! git ls-files --error-unmatch "$PUC_BOOTSTRAP" >/dev/null 2>&1; then
+    echo "Error: Plugin Update Checker is not tracked by Git."
+    echo "Commit the vendor/yahnis-elsts directory."
     exit 1
 fi
 
@@ -162,11 +159,36 @@ mkdir -p "$STAGING_DIR"
 # Export the committed repository tree.
 git archive --format=tar HEAD | tar -x -C "$STAGING_DIR"
 
-# Purge non-English localization files (.po and .mo).
+# --------------------------------------------------
+# Clean distribution files
+# --------------------------------------------------
+
+# Remove non-English localization files (.po and .mo).
 echo "Cleaning up translation files..."
-echo
 
 find "${STAGING_DIR}" -type f \( -name "*.po" -o -name "*.mo" \) -delete
+
+# Remove Composer-generated files and development dependencies.
+echo "Removing Composer development files..."
+
+# Remove Composer's generated autoloader and metadata.
+rm -f "${STAGING_DIR}/vendor/autoload.php"
+rm -rf "${STAGING_DIR}/vendor/composer"
+
+# Remove Composer project configuration.
+rm -f "${STAGING_DIR}/composer.json"
+rm -f "${STAGING_DIR}/composer.lock"
+
+# Retain only the Plugin Update Checker package.
+find "${STAGING_DIR}/vendor" -mindepth 1 -maxdepth 1 \
+    ! -name "yahnis-elsts" \
+    -exec rm -rf {} +
+
+echo
+
+# --------------------------------------------------
+# Create distribution ZIP
+# --------------------------------------------------
 
 # Pack the plugin directory into the versioned release ZIP.
 (

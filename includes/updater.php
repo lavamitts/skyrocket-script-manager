@@ -8,14 +8,15 @@ $config = $github_updater_config ?? [];
 
 add_action('plugins_loaded', static function () use ($config) {
 
-    // Check that the updater library is available.
-    $autoload_file = dirname($config['plugin_file']) . '/vendor/autoload.php';
+    // Load Plugin Update Checker directly, without Composer's autoloader.
+    $updater_file = dirname($config['plugin_file'])
+        . '/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php';
 
-    if (!file_exists($autoload_file)) {
+    if (!file_exists($updater_file)) {
         return;
     }
 
-    require_once $autoload_file;
+    require_once $updater_file;
 
     // Initialise the GitHub update checker.
     $update_checker = \YahnisElsts\PluginUpdateChecker\v6\PucFactory::buildUpdateChecker(
@@ -24,9 +25,10 @@ add_action('plugins_loaded', static function () use ($config) {
         $config['repository']
     );
 
-    // Enable release assets.
+    // Explicitly typecast for IDE static analysis.
     /** @var \YahnisElsts\PluginUpdateChecker\v6p0\Vcs\GitHubApi $vcsApi */
     $vcsApi = $update_checker->getVcsApi();
+
     $vcsApi->enableReleaseAssets();
 
 });
