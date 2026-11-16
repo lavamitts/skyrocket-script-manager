@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Individual JS Snippet Manager
+ * Plugin Name: Skyrocket script manager
  * Description: Manage individual JavaScript snippets with site-wide targeting or assignment via a post/page editor panel.
- * Version: 3.0.3
+ * Version: 1.0.2
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Biddenham Society
@@ -11,6 +11,8 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+// Plugin version constant, used for cache-busting CSS and JavaScript.
+define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.0.2');
 
 class Individual_JS_Snippets
 {
@@ -220,7 +222,8 @@ class Individual_JS_Snippets
         $code = get_post_meta($post->ID, '_js_snippet_code', true);
         ?>
         <p>Paste your JavaScript code below. Do not include script tags.</p>
-        <textarea name="js_snippet_code" rows="12" style="width:100%; font-family:monospace;"><?php echo esc_textarea($code); ?></textarea>
+        <textarea name="js_snippet_code" rows="12"
+            style="width:100%; font-family:monospace;"><?php echo esc_textarea($code); ?></textarea>
         <?php
     }
 
@@ -232,7 +235,8 @@ class Individual_JS_Snippets
         ?>
         <p>
             <strong><label for="js_snippet_description">Description</label></strong><br>
-            <textarea name="js_snippet_description" id="js_snippet_description" rows="4" style="width:100%;" placeholder="Describe the purpose of this script..."><?php echo esc_textarea($description); ?></textarea>
+            <textarea name="js_snippet_description" id="js_snippet_description" rows="4" style="width:100%;"
+                placeholder="Describe the purpose of this script..."><?php echo esc_textarea($description); ?></textarea>
             <span class="description">Internal use only. This will not be shown on the published site.</span>
         </p>
 
@@ -254,7 +258,8 @@ class Individual_JS_Snippets
         </p>
 
         <p class="description">
-            "Entire Site" runs everywhere. "Assigned via Post/Page Editor" runs only where you tick it in the editor sidebar. The snippet must be Published to appear there. Body Open requires a theme that calls wp_body_open().
+            "Entire Site" runs everywhere. "Assigned via Post/Page Editor" runs only where you tick it in the editor sidebar.
+            The snippet must be Published to appear there. Body Open requires a theme that calls wp_body_open().
         </p>
         <?php
     }
