@@ -20,7 +20,7 @@ $github_updater_config = [
 ];
 
 // Updater code
-require_once __DIR__ . '/includes/updater.php';
+require_once __DIR__ . '/includes/plugin-updater.php';
 
 
 // Remove the temporary configuration variable.
