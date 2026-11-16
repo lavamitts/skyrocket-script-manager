@@ -16,6 +16,10 @@
 
 - Additional of default script capability - initial script is regex abbreviation replacement for specifiable terms.
 
-## 1.2.0 - Additional of new window script with CSS enqueuing
+## 1.2.0 - Addition of new window script with CSS enqueuing
 
-- Additional of new window script with CSS enqueuing
+- Addition of new window script with CSS enqueuing
+
+## 1.3.0 - Finalisation of builf and update tools
+
+- Finalisation of builf and update tools
