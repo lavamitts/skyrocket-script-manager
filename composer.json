@@ -1,5 +1,11 @@
 {
-    "require": {
-        "yahnis-elsts/plugin-update-checker": "^6.0"
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/lavamitts/github-plugin-updater"
+        }
+    ],
+    "require-dev": {
+        "lavamitts/github-plugin-updater": "^1.0"
     }
 }

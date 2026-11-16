@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Stop if anything goes wrong.
@@ -57,22 +56,21 @@ if [[ ! -f "$CHANGELOG_FILE" ]]; then
 fi
 
 # --------------------------------------------------
-# Validate Plugin Update Checker dependency
+# Validate GitHub Updater dependency
 # --------------------------------------------------
 
-# Standalone PUC bootstrap.
-PUC_BOOTSTRAP="vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php"
+UPDATER_FILE="includes/Updater.php"
 
-if [[ ! -f "$PUC_BOOTSTRAP" ]]; then
-    echo "Error: Could not find ${PUC_BOOTSTRAP}."
-    echo "Run composer install before building the distribution."
+if [[ ! -f "$UPDATER_FILE" ]]; then
+    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_FILE}."
+    echo "Copy vendor/lavamitts/github-plugin-updater/src/Updater.php to ${UPDATER_FILE}."
     exit 1
 fi
 
-# Ensure the PUC bootstrap is committed.
-if ! git ls-files --error-unmatch "$PUC_BOOTSTRAP" >/dev/null 2>&1; then
-    echo "Error: Plugin Update Checker is not tracked by Git."
-    echo "Commit the vendor/yahnis-elsts directory."
+# Ensure the updater file is committed.
+if ! git ls-files --error-unmatch "$UPDATER_FILE" >/dev/null 2>&1; then
+    echo -e "${RED}Error:${RESET} ${UPDATER_FILE} is not tracked by Git."
+    echo "Stage and commit ${UPDATER_FILE} before building the distribution."
     exit 1
 fi
 
@@ -171,11 +169,7 @@ find "${STAGING_DIR}" -type f \( -name "*.po" -o -name "*.mo" \) -delete
 # Remove Composer-generated files and development dependencies.
 echo "Removing Composer development files..."
 
-# Remove Composer's generated autoloader and metadata.
-rm -f "${STAGING_DIR}/vendor/autoload.php"
-rm -rf "${STAGING_DIR}/vendor/composer"
-
-# Remove Composer project configuration.
+rm -rf "${STAGING_DIR}/vendor"
 rm -f "${STAGING_DIR}/composer.json"
 rm -f "${STAGING_DIR}/composer.lock"
 
@@ -185,11 +179,6 @@ echo "Removing development and Git files..."
 rm -rf "${STAGING_DIR}/tools"
 rm -rf "${STAGING_DIR}/.github"
 rm -f "${STAGING_DIR}/.gitignore"
-
-# Retain only the Plugin Update Checker package.
-find "${STAGING_DIR}/vendor" -mindepth 1 -maxdepth 1 \
-    ! -name "yahnis-elsts" \
-    -exec rm -rf {} +
 
 echo
 

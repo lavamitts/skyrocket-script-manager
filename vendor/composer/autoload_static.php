@@ -4,10 +4,20 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit8078f561dde0ff759200487ad8861fd2
+class ComposerStaticInit447f86dc538840f2d8a5fade8db016a1
 {
-    public static $files = array (
-        'd7b84b18862ca404853ecae4a88762f0' => __DIR__ . '/..' . '/yahnis-elsts/plugin-update-checker/load-v6p0.php',
+    public static $prefixLengthsPsr4 = array (
+        'S' =>
+        array (
+            'Skyrocket\\GitHubUpdater\\' => 24,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'Skyrocket\\GitHubUpdater\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/lavamitts/github-plugin-updater/src',
+        ),
     );
 
     public static $classMap = array (
@@ -17,7 +27,9 @@ class ComposerStaticInit8078f561dde0ff759200487ad8861fd2
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit8078f561dde0ff759200487ad8861fd2::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$classMap;
 
         }, null, ClassLoader::class);
     }

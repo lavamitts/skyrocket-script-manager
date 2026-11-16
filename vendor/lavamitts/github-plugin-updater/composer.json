@@ -1,0 +1,14 @@
+{
+    "name": "lavamitts/github-plugin-updater",
+    "description": "Minimal single-file GitHub release asset updater for WordPress plugins.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Skyrocket\\GitHubUpdater\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.0"
+    }
+}
