@@ -59,18 +59,25 @@ fi
 # Validate GitHub Updater dependency
 # --------------------------------------------------
 
-UPDATER_FILE="includes/plugin-updater.php"
+UPDATER_BOOTSTRAP="includes/plugin-updater.php"
+UPDATER_VENDOR_CLASS="vendor/lavamitts/github-plugin-updater/src/Updater.php"
 
-if [[ ! -f "$UPDATER_FILE" ]]; then
-    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_FILE}."
-    echo "Copy vendor/lavamitts/github-plugin-updater/src/Updater.php to ${UPDATER_FILE}."
+if [[ ! -f "$UPDATER_BOOTSTRAP" ]]; then
+    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_BOOTSTRAP}."
     exit 1
 fi
 
-# Ensure the updater file is committed.
-if ! git ls-files --error-unmatch "$UPDATER_FILE" >/dev/null 2>&1; then
-    echo -e "${RED}Error:${RESET} ${UPDATER_FILE} is not tracked by Git."
-    echo "Stage and commit ${UPDATER_FILE} before building the distribution."
+# Ensure the bootstrap file is committed.
+if ! git ls-files --error-unmatch "$UPDATER_BOOTSTRAP" >/dev/null 2>&1; then
+    echo -e "${RED}Error:${RESET} ${UPDATER_BOOTSTRAP} is not tracked by Git."
+    echo "Stage and commit ${UPDATER_BOOTSTRAP} before building the distribution."
+    exit 1
+fi
+
+# Ensure the Composer package is installed locally.
+if [[ ! -f "$UPDATER_VENDOR_CLASS" ]]; then
+    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_VENDOR_CLASS}."
+    echo "Run 'composer install' before building the distribution."
     exit 1
 fi
 
@@ -156,6 +163,10 @@ mkdir -p "$STAGING_DIR"
 
 # Export the committed repository tree.
 git archive --format=tar HEAD | tar -x -C "$STAGING_DIR"
+
+# Inject the single-file Updater class from Composer's vendor directory.
+mkdir -p "${STAGING_DIR}/includes"
+cp "$UPDATER_VENDOR_CLASS" "${STAGING_DIR}/includes/Updater.php"
 
 # --------------------------------------------------
 # Clean distribution files
