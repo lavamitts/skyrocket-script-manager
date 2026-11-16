@@ -1,0 +1,35 @@
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.old
+
+# Dependencies
+/vendor/*
+!/vendor/plugin-update-checker/
+
+# Node dependencies
+node_modules/
+
+# Archives
+*.zip
+*.tar
+*.gz
+
+# Disributions
+/dist/
+dist/
+
+# Local guidance
+GUIDANCE.md
