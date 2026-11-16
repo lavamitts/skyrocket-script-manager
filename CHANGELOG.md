@@ -22,4 +22,8 @@
 
 ## 1.3.0 - Finalisation of builf and update tools
 
-- Finalisation of builf and update tools
+- Finalisation of build and update tools
+
+## 1.3.0 - Move to using composer and dependabot for code updater versioning
+
+- Move to using composer and dependabot for code updater versioning

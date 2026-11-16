@@ -15,9 +15,7 @@ Thumbs.db
 *.bak
 *.old
 
-# Dependencies
-/vendor/*
-!/vendor/plugin-update-checker/
+# No vendor exclusion: commit production dependencies
 
 # Node dependencies
 node_modules/
@@ -27,9 +25,5 @@ node_modules/
 *.tar
 *.gz
 
-# Disributions
-/dist/
+# Distributions
 dist/
-
-# Local guidance
-GUIDANCE.md

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage individual JavaScript snippets (with optional CSS) with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Biddenham Society
@@ -12,49 +12,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Plugin version constant, used for cache-busting CSS and JavaScript.
-define('SKYROCKET_SCRIPT_MANAGER_VERSION', '1.3.0');
-define('SKYROCKET_SCRIPT_MANAGER_PATH', plugin_dir_path(__FILE__));
-define('SSM_PATH', plugin_dir_path(__FILE__));
+// GitHub updater configuration.
+$github_updater_config = [
+    'username' => 'lavamitts',
+    'repository' => 'skyrocket-script-manager',
+    'plugin_file' => __FILE__,
+];
 
-// Token loaded
-require_once SSM_PATH . 'includes/token.php';
+// Updater code
+require_once __DIR__ . '/includes/updater.php';
 
-/**
- * Initialise the GitHub plugin update checker.
- */
-function ssm_init_update_checker()
-{
-    // Require a GitHub access token.
-    if (!defined('SSM_GITHUB_TOKEN') || SSM_GITHUB_TOKEN === '') {
-        return;
-    }
 
-    // Check that the updater library is available.
-    $updater_file = SSM_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
-
-    if (!file_exists($updater_file)) {
-        return;
-    }
-
-    require_once $updater_file;
-
-    // Initialise the GitHub update checker.
-    $update_checker = \YahnisElsts\PluginUpdateChecker\v6\PucFactory::buildUpdateChecker(
-        'https://github.com/lavamitts/skyrocket-script-manager/',
-        __FILE__,
-        'skyrocket-script-manager'
-    );
-
-    // Authenticate with the private GitHub repository.
-    $update_checker->setAuthentication(SSM_GITHUB_TOKEN);
-
-    // Explicitly typecast for IDE static analysis
-    /** @var \YahnisElsts\PluginUpdateChecker\v6p0\Vcs\GitHubApi $vcsApi */
-    $vcsApi = $update_checker->getVcsApi();
-    $vcsApi->enableReleaseAssets();
-}
-add_action('plugins_loaded', 'ssm_init_update_checker');
+// Remove the temporary configuration variable.
+unset($github_updater_config);
 
 class Individual_JS_Snippets
 {
@@ -105,7 +75,7 @@ class Individual_JS_Snippets
         $instance = new self();
         $instance->register_snippet_cpt();
 
-        $defaults_dir = SKYROCKET_SCRIPT_MANAGER_PATH . 'default-scripts/';
+        $defaults_dir = plugin_dir_path(__FILE__) . 'default-scripts/';
         if (!is_dir($defaults_dir)) {
             return;
         }
