@@ -72,6 +72,7 @@ class Updater
         }
 
         delete_transient($this->transientKey);
+        delete_site_transient('update_plugins');
         wp_update_plugins();
 
         $updates = get_site_transient('update_plugins');

@@ -42,3 +42,7 @@ Private project. Not intended for public distribution.
 ln -s \
 "$HOME/skyrocket-dev/wordpress-plugins/skyrocket-script-manager" \
 "$HOME/skyrocket-dev/plugin-development-environment/app/public/wp-content/plugins/skyrocket-script-manager"
+
+To update the update mechanism
+
+`composer update lavamitts/github-plugin-updater`
