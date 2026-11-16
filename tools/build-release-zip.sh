@@ -179,9 +179,12 @@ rm -rf "${STAGING_DIR}/vendor/composer"
 rm -f "${STAGING_DIR}/composer.json"
 rm -f "${STAGING_DIR}/composer.lock"
 
-# Remove development tools.
-echo "Removing development tools..."
+# Remove development tools and GitHub configuration.
+echo "Removing development and Git files..."
+
 rm -rf "${STAGING_DIR}/tools"
+rm -rf "${STAGING_DIR}/.github"
+rm -f "${STAGING_DIR}/.gitignore"
 
 # Retain only the Plugin Update Checker package.
 find "${STAGING_DIR}/vendor" -mindepth 1 -maxdepth 1 \
