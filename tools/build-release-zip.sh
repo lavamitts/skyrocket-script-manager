@@ -179,6 +179,10 @@ rm -rf "${STAGING_DIR}/vendor/composer"
 rm -f "${STAGING_DIR}/composer.json"
 rm -f "${STAGING_DIR}/composer.lock"
 
+# Remove development tools.
+echo "Removing development tools..."
+rm -rf "${STAGING_DIR}/tools"
+
 # Retain only the Plugin Update Checker package.
 find "${STAGING_DIR}/vendor" -mindepth 1 -maxdepth 1 \
     ! -name "yahnis-elsts" \
