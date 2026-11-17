@@ -1,18 +1,103 @@
 <?php
 
+/**
+ * GitHub Plugin Updater
+ *
+ * Provides automatic GitHub release update integration for a WordPress plugin.
+ *
+ * Connects WordPress's native plugin update system to the GitHub Releases API,
+ * allowing plugins hosted outside the WordPress.org repository to receive
+ * updates through the standard WordPress Plugins screen.
+ *
+ * Features:
+ * - Checks GitHub for the latest published release.
+ * - Compares the remote release version against the installed plugin version.
+ * - Uses explicitly uploaded ZIP release assets as update packages.
+ * - Supports public and private GitHub repositories.
+ * - Supports optional GitHub personal access token authentication.
+ * - Provides plugin information and changelog data for the WordPress
+ *   "View details" modal.
+ * - Caches GitHub API responses to reduce unnecessary requests.
+ * - Clears cached release information following plugin updates.
+ * - Provides a manual "Check for updates" link on the Plugins screen.
+ *
+ * GitHub release requirements:
+ * - Releases must have a version tag (e.g. v1.2.0 or 1.2.0).
+ * - Releases must contain an explicitly uploaded ZIP archive.
+ * - The ZIP archive must contain the plugin files in the expected structure.
+ *
+ * Usage:
+ *
+ * Instantiate the class from a plugin's initialisation file:
+ *
+ * new \Skyrocket\GitHubUpdater\Updater(
+ *     plugin_basename(__FILE__),
+ *     'github-username/github-repository',
+ *     null
+ * );
+ *
+ * For private repositories, supply a GitHub personal access token as
+ * the third argument.
+ *
+ * Requirements:
+ * - WordPress
+ * - PHP 8.0 or later
+ * - A GitHub repository with published releases
+ *
+ * @package Skyrocket\GitHubUpdater
+ * @author  Skyrocket Phytopharma UK Ltd
+ */
+
 declare(strict_types=1);
 
 namespace Skyrocket\GitHubUpdater;
 
+/**
+ * Handles GitHub release checks and integrates them with WordPress's
+ * native plugin update and information systems.
+ */
 class Updater
 {
+    /**
+     * Absolute path to the main plugin file.
+     */
     private string $pluginFile;
+
+    /**
+     * WordPress plugin identifier, relative to the plugins directory.
+     */
     private string $pluginSlug;
+
+    /**
+     * GitHub repository in owner/repository format.
+     */
     private string $githubRepo;
+
+    /**
+     * Optional GitHub personal access token.
+     *
+     * Null when accessing a public repository without authentication.
+     */
     private ?string $accessToken;
+
+    /**
+     * WordPress transient key used to cache GitHub release information.
+     */
     private string $transientKey;
+
+    /**
+     * Duration, in seconds, for which successful release responses are cached.
+     */
     private int $cacheTtl;
 
+    /**
+     * Initialise the updater and register its WordPress hooks.
+     *
+     * @param string      $pluginFile  Absolute path to the plugin's main file.
+     * @param string      $githubRepo  GitHub repository in owner/repository format.
+     * @param string|null $accessToken Optional GitHub personal access token.
+     * @param int         $cacheTtl    Successful response cache duration in seconds.
+     */
     public function __construct(
         string $pluginFile,
         string $githubRepo,

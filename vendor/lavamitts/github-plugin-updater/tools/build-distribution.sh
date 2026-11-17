@@ -20,19 +20,27 @@ printf '\033[3J'
 echo -e "${GREEN}GENERATING DISTRIBUTION SET${RESET}\n"
 
 # --------------------------------------------------
-# Locate plugin root & configuration
+# Locate updater package & destination plugin
 # --------------------------------------------------
 
-# This script lives in /tools, so move one directory up.
+# This script lives in the updater package's /tools folder.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+UPDATER_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PLUGIN_ROOT="$(cd "${UPDATER_ROOT}/../../.." && pwd)"
 
-# Derive plugin slug from the parent folder name.
+# Locate updater source files.
+UPDATER_SOURCE_DIR="${UPDATER_ROOT}/src"
+
+# Derive plugin slug from the destination folder name.
 PLUGIN_SLUG="$(basename "$PLUGIN_ROOT")"
 MAIN_FILE="${PLUGIN_SLUG}.php"
 CHANGELOG_FILE="CHANGELOG.md"
 
 cd "$PLUGIN_ROOT"
+
+# --------------------------------------------------
+# Validate destination plugin
+# --------------------------------------------------
 
 # Verify that the matching PHP file exists in the plugin root.
 if [[ ! -f "$MAIN_FILE" ]]; then
@@ -56,28 +64,19 @@ if [[ ! -f "$CHANGELOG_FILE" ]]; then
 fi
 
 # --------------------------------------------------
-# Validate GitHub Updater dependency
+# Validate GitHub Updater source
 # --------------------------------------------------
 
-UPDATER_BOOTSTRAP="includes/plugin-updater.php"
-UPDATER_VENDOR_CLASS="vendor/lavamitts/github-plugin-updater/src/Updater.php"
+UPDATER_BOOTSTRAP="${UPDATER_SOURCE_DIR}/plugin-updater.php"
+UPDATER_CLASS="${UPDATER_SOURCE_DIR}/Updater.php"
 
 if [[ ! -f "$UPDATER_BOOTSTRAP" ]]; then
     echo -e "${RED}Error:${RESET} Could not find ${UPDATER_BOOTSTRAP}."
     exit 1
 fi
 
-# Ensure the bootstrap file is committed.
-if ! git ls-files --error-unmatch "$UPDATER_BOOTSTRAP" >/dev/null 2>&1; then
-    echo -e "${RED}Error:${RESET} ${UPDATER_BOOTSTRAP} is not tracked by Git."
-    echo "Stage and commit ${UPDATER_BOOTSTRAP} before building the distribution."
-    exit 1
-fi
-
-# Ensure the Composer package is installed locally.
-if [[ ! -f "$UPDATER_VENDOR_CLASS" ]]; then
-    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_VENDOR_CLASS}."
-    echo "Run 'composer install' before building the distribution."
+if [[ ! -f "$UPDATER_CLASS" ]]; then
+    echo -e "${RED}Error:${RESET} Could not find ${UPDATER_CLASS}."
     exit 1
 fi
 
@@ -161,12 +160,24 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 STAGING_DIR="${TEMP_DIR}/${PLUGIN_SLUG}"
 mkdir -p "$STAGING_DIR"
 
-# Export the committed repository tree.
+# Export the committed destination plugin repository tree.
 git archive --format=tar HEAD | tar -x -C "$STAGING_DIR"
 
-# Inject the single-file Updater class from Composer's vendor directory.
-mkdir -p "${STAGING_DIR}/includes"
-cp "$UPDATER_VENDOR_CLASS" "${STAGING_DIR}/includes/Updater.php"
+# --------------------------------------------------
+# Bundle GitHub Plugin Updater
+# --------------------------------------------------
+
+echo "Bundling GitHub Plugin Updater..."
+
+# Preserve the Composer vendor directory structure.
+STAGING_UPDATER_DIR="${STAGING_DIR}/vendor/lavamitts/github-plugin-updater/src"
+
+# Replace any existing copy with the current updater source.
+rm -rf "${STAGING_DIR}/vendor/lavamitts/github-plugin-updater"
+mkdir -p "$STAGING_UPDATER_DIR"
+
+# Copy the updater source, following symlinks if Composer uses a path repository.
+cp -R -L "${UPDATER_SOURCE_DIR}/." "${STAGING_UPDATER_DIR}/"
 
 # --------------------------------------------------
 # Clean distribution files
@@ -177,10 +188,9 @@ echo "Cleaning up translation files..."
 
 find "${STAGING_DIR}" -type f \( -name "*.po" -o -name "*.mo" \) -delete
 
-# Remove Composer-generated files and development dependencies.
+# Remove Composer development metadata from the destination plugin.
 echo "Removing Composer development files..."
 
-rm -rf "${STAGING_DIR}/vendor"
 rm -f "${STAGING_DIR}/composer.json"
 rm -f "${STAGING_DIR}/composer.lock"
 

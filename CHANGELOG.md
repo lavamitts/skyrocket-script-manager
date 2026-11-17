@@ -42,3 +42,14 @@
 ## 1.4.2 - Include v. 1.0.2 of the updater plugin
 
 - Resolved an issue where manual update checks (Check for updates) would silently fail or report the plugin as up to date if triggered within 60 seconds of a previous check, by forcing WordPress to reset its update_plugins transient cache.
+
+## 1.4.3 - Utilise version 1.0.3 of the plugin updater
+
+1.0.3 of the plugin updater does the following:
+
+- Move responsibility for creating and managing the updater include file from the recipient plugins to the updater itself.
+- Comprehensive documentation of the updater plugin.
+
+## 1.4.4 - Utilise version 1.0.4 of the plugin updater
+- Build tool now fully generic.
+- Build tool now moved into /tools subfolder.

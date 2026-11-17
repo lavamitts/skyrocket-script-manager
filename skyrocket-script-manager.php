@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage individual JavaScript snippets (with optional CSS) with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.4.2
+ * Version: 1.4.4
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Biddenham Society
@@ -20,6 +20,7 @@ $github_updater_config = [
 ];
 
 // Updater code
+require_once __DIR__ . '/vendor/lavamitts/github-plugin-updater/src/plugin-updater.php';
 require_once __DIR__ . '/includes/plugin-updater.php';
 
 

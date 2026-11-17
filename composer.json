@@ -7,5 +7,14 @@
     ],
     "require-dev": {
         "lavamitts/github-plugin-updater": "^1.0"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@make-updater-builder-executable"
+        ],
+        "post-update-cmd": [
+            "@make-updater-builder-executable"
+        ],
+        "make-updater-builder-executable": "chmod +x vendor/lavamitts/github-plugin-updater/tools/build-distribution.sh"
     }
 }

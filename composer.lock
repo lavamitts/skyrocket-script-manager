@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "lavamitts/github-plugin-updater",
-            "version": "1.0.2",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lavamitts/github-plugin-updater.git",
-                "reference": "9b275a3b4015646d1a65a59af64ab85a5310e007"
+                "reference": "3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lavamitts/github-plugin-updater/zipball/9b275a3b4015646d1a65a59af64ab85a5310e007",
-                "reference": "9b275a3b4015646d1a65a59af64ab85a5310e007",
+                "url": "https://api.github.com/repos/lavamitts/github-plugin-updater/zipball/3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c",
+                "reference": "3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c",
                 "shasum": ""
             },
             "require": {
@@ -35,10 +35,10 @@
             ],
             "description": "Minimal single-file GitHub release asset updater for WordPress plugins.",
             "support": {
-                "source": "https://github.com/lavamitts/github-plugin-updater/tree/1.0.2",
+                "source": "https://github.com/lavamitts/github-plugin-updater/tree/1.0.4",
                 "issues": "https://github.com/lavamitts/github-plugin-updater/issues"
             },
-            "time": "2026-11-16T21:26:02+00:00"
+            "time": "2026-11-17T07:43:49+00:00"
         }
     ],
     "aliases": [],
