@@ -20,7 +20,7 @@
 
 To build the release candidate, run this script:
 
-`./vendor/lavamitts/github-plugin-updater/tools/build-distribution.sh`
+`./vendor/lavamitts/skyrocket-plugin-updater/tools/build-distribution.sh`
 
 In preparation for this:
 
