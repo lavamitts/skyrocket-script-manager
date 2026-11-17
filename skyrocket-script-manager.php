@@ -5,7 +5,7 @@
  * Version: 1.4.6
  * Requires at least: 6.6
  * Requires PHP: 7.4
- * Author: Biddenham Society
+ * Author: Skyrocket Digital Development
  */
 
 if (!defined('ABSPATH')) {
