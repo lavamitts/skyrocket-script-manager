@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Stop if anything goes wrong.
@@ -170,10 +171,10 @@ git archive --format=tar HEAD | tar -x -C "$STAGING_DIR"
 echo "Bundling GitHub Plugin Updater..."
 
 # Preserve the Composer vendor directory structure.
-STAGING_UPDATER_DIR="${STAGING_DIR}/vendor/lavamitts/github-plugin-updater/src"
+STAGING_UPDATER_DIR="${STAGING_DIR}/vendor/lavamitts/skyrocket-plugin-updater/src"
 
 # Replace any existing copy with the current updater source.
-rm -rf "${STAGING_DIR}/vendor/lavamitts/github-plugin-updater"
+rm -rf "${STAGING_DIR}/vendor/lavamitts/skyrocket-plugin-updater"
 mkdir -p "$STAGING_UPDATER_DIR"
 
 # Copy the updater source, following symlinks if Composer uses a path repository.
@@ -193,6 +194,12 @@ echo "Removing Composer development files..."
 
 rm -f "${STAGING_DIR}/composer.json"
 rm -f "${STAGING_DIR}/composer.lock"
+
+# Remove Composer-generated autoload files.
+echo "Removing Composer autoload files..."
+
+rm -f "${STAGING_DIR}/vendor/autoload.php"
+rm -rf "${STAGING_DIR}/vendor/composer"
 
 # Remove development tools and GitHub configuration.
 echo "Removing development and Git files..."

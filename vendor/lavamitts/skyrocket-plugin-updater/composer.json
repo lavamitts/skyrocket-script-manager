@@ -1,6 +1,6 @@
 {
-    "name": "lavamitts/github-plugin-updater",
-    "description": "Minimal single-file GitHub release asset updater for WordPress plugins.",
+    "name": "lavamitts/skyrocket-plugin-updater",
+    "description": "Minimal GitHub release asset updater for WordPress plugins.",
     "type": "library",
     "license": "MIT",
     "autoload": {

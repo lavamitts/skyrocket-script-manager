@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit447f86dc538840f2d8a5fade8db016a1
+class ComposerStaticInit31edf5706427fe7f438e599da698362e
 {
     public static $prefixLengthsPsr4 = array (
         'S' =>
@@ -16,7 +16,7 @@ class ComposerStaticInit447f86dc538840f2d8a5fade8db016a1
     public static $prefixDirsPsr4 = array (
         'Skyrocket\\GitHubUpdater\\' =>
         array (
-            0 => __DIR__ . '/..' . '/lavamitts/github-plugin-updater/src',
+            0 => __DIR__ . '/..' . '/lavamitts/skyrocket-plugin-updater/src',
         ),
     );
 
@@ -27,9 +27,9 @@ class ComposerStaticInit447f86dc538840f2d8a5fade8db016a1
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit447f86dc538840f2d8a5fade8db016a1::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit31edf5706427fe7f438e599da698362e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit31edf5706427fe7f438e599da698362e::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit31edf5706427fe7f438e599da698362e::$classMap;
 
         }, null, ClassLoader::class);
     }

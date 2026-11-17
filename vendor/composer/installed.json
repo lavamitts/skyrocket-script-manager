@@ -1,24 +1,24 @@
 {
     "packages": [
         {
-            "name": "lavamitts/github-plugin-updater",
-            "version": "1.0.4",
-            "version_normalized": "1.0.4.0",
+            "name": "lavamitts/skyrocket-plugin-updater",
+            "version": "1.0.5",
+            "version_normalized": "1.0.5.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lavamitts/github-plugin-updater.git",
-                "reference": "3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c"
+                "url": "https://github.com/lavamitts/skyrocket-plugin-updater.git",
+                "reference": "fd040f0a656d7c8344c24a5c0234257651a230b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lavamitts/github-plugin-updater/zipball/3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c",
-                "reference": "3c611aded9ed9f3cc7cd10ea409d0b8ee0a4576c",
+                "url": "https://api.github.com/repos/lavamitts/skyrocket-plugin-updater/zipball/fd040f0a656d7c8344c24a5c0234257651a230b9",
+                "reference": "fd040f0a656d7c8344c24a5c0234257651a230b9",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0"
             },
-            "time": "2026-11-17T07:43:49+00:00",
+            "time": "2026-11-17T08:07:28+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -29,16 +29,16 @@
             "license": [
                 "MIT"
             ],
-            "description": "Minimal single-file GitHub release asset updater for WordPress plugins.",
+            "description": "Minimal GitHub release asset updater for WordPress plugins.",
             "support": {
-                "source": "https://github.com/lavamitts/github-plugin-updater/tree/1.0.4",
-                "issues": "https://github.com/lavamitts/github-plugin-updater/issues"
+                "source": "https://github.com/lavamitts/skyrocket-plugin-updater/tree/1.0.5",
+                "issues": "https://github.com/lavamitts/skyrocket-plugin-updater/issues"
             },
-            "install-path": "../lavamitts/github-plugin-updater"
+            "install-path": "../lavamitts/skyrocket-plugin-updater"
         }
     ],
     "dev": true,
     "dev-package-names": [
-        "lavamitts/github-plugin-updater"
+        "lavamitts/skyrocket-plugin-updater"
     ]
 }

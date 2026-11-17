@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Skyrocket\\GitHubUpdater\\' => array($vendorDir . '/lavamitts/github-plugin-updater/src'),
+    'Skyrocket\\GitHubUpdater\\' => array($vendorDir . '/lavamitts/skyrocket-plugin-updater/src'),
 );

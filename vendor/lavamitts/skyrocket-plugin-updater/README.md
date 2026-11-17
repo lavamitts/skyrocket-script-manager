@@ -33,11 +33,11 @@ Add the repository to your plugin's `composer.json` and require the package:
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/lavamitts/github-plugin-updater"
+            "url": "https://github.com/lavamitts/skyrocket-plugin-updater"
         }
     ],
     "require-dev": {
-        "lavamitts/github-plugin-updater": "^1.0"
+        "lavamitts/skyrocket-plugin-updater": "^1.0"
     }
 }
 ```
@@ -60,7 +60,7 @@ Use Composer strictly as a development/build tool to manage versions of `Updater
 
 1. **Copy `Updater.php` during your build step:**
    ```bash
-   cp vendor/lavamitts/github-plugin-updater/src/Updater.php build/your-plugin/includes/Updater.php
+   cp vendor/lavamitts/skyrocket-plugin-updater/src/Updater.php build/your-plugin/includes/Updater.php
    ```
 
 2. **Load and instantiate it in your plugin** (wrapped in `class_exists()` so multiple plugins using this updater on the same WordPress site never collide):
@@ -87,7 +87,7 @@ Use Composer strictly as a development/build tool to manage versions of `Updater
 
 ### Option B: Standard Composer Autoloading
 
-If you already ship a `vendor/` directory with your plugin, move `"lavamitts/github-plugin-updater": "^1.0"` from `require-dev` to `require` in `composer.json`, include Composer's autoloader, and instantiate the class:
+If you already ship a `vendor/` directory with your plugin, move `"lavamitts/skyrocket-plugin-updater": "^1.0"` from `require-dev` to `require` in `composer.json`, include Composer's autoloader, and instantiate the class:
 
 ```php
 require_once __DIR__ . '/vendor/autoload.php';

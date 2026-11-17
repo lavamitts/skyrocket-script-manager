@@ -53,3 +53,7 @@
 ## 1.4.4 - Utilise version 1.0.4 of the plugin updater
 - Build tool now fully generic.
 - Build tool now moved into /tools subfolder.
+- 
+## 1.4.5 - Utilise version 1.0.5 of the plugin updater
+- Now using "lavamitts/skyrocket-plugin-updater" instead of "lavamitts/github-plugin-updater".
+- Build tooling adjusted to NOT include the composer and autoload files in the distribution.
