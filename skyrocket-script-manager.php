@@ -489,14 +489,21 @@ class Individual_JS_Snippets
         }
 
         var children = cfg.snippets.length
-            ? cfg.snippets.map( function ( s ) {
-                return el( CheckboxControl, {
-                    key: s.id,
-                    __nextHasNoMarginBottom: true,
-                    label: s.title + ' (' + s.location + ( s.sitewide ? ', already sitewide' : '' ) + ')',
-                    checked: assigned.indexOf( s.id ) !== -1,
-                    onChange: function ( on ) { toggle( s.id, on ); }
-                } );
+            ? cfg.snippets.map( function ( s, idx ) {
+                var isLast = idx === cfg.snippets.length - 1;
+                return el(
+                    'div',
+                    {
+                        key: s.id,
+                        style: { marginBottom: isLast ? '0' : '3px' }
+                    },
+                    el( CheckboxControl, {
+                        __nextHasNoMarginBottom: true,
+                        label: s.title + ' (' + s.location + ( s.sitewide ? ', already sitewide' : '' ) + ')',
+                        checked: assigned.indexOf( s.id ) !== -1,
+                        onChange: function ( on ) { toggle( s.id, on ); }
+                    } )
+                );
             } )
             : el( 'p', null, cfg.emptyText );
 
