@@ -61,3 +61,6 @@
 ## 1.4.6 - Correct broken reference to plugin updater
 - Correct broken reference to plugin updater
 - Remove vendor files from repo
+
+## 1.4.7 - Add in registered trademark default script
+- Add in registered trademark default script

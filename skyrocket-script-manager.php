@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage individual JavaScript snippets (with optional CSS) with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.4.6
+ * Version: 1.4.7
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Skyrocket Digital Development
@@ -11,6 +11,8 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Remember to update the version definition below to match the plugin version.
 
 // GitHub updater configuration.
 $github_updater_config = [
@@ -29,7 +31,7 @@ class Individual_JS_Snippets
 {
     const CPT = 'js_snippet';
     const ASSIGN_META = '_assigned_js_snippets';
-    const VERSION = '3.1.0';
+    const VERSION = '1.4.7';
 
     /** @var WP_Post[]|null Per-request cache of published snippets */
     private $published_snippets = null;
