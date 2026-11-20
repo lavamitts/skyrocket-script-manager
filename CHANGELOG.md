@@ -85,3 +85,6 @@
 
 ## 1.5.3 - Fix plugin icon
 - Fix plugin icon
+
+## 1.5.4 - Bump update
+- Bump update
