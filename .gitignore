@@ -32,3 +32,6 @@ dist/
 
 # Archived scripts
 /default-scripts/archive/
+
+# Versioning
+*.old.txt

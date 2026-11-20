@@ -71,3 +71,6 @@
 
 ## 1.4.9 - Add in JS Snippets link to plugin window
 - Add in JS Snippets link to plugin window
+
+## 1.5.0 - Complete refactor to include type and priority
+- To cater for the inclusion of header, body and footer HTML and to resequence fragments
