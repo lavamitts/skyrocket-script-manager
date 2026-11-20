@@ -91,3 +91,6 @@
 
 ## 1.5.5 - Move plugin icon images
 - Move plugin icon images
+
+## 1.5.6 - Bump update
+- Bump update
