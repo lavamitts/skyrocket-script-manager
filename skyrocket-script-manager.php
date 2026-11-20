@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage individual JavaScript snippets (with optional CSS) with site-wide targeting or assignment via a post/page editor panel.
- * Version: 1.4.8
+ * Version: 1.4.9
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Skyrocket Digital Development
@@ -685,3 +685,26 @@ JS;
 register_activation_hook(__FILE__, ['Individual_JS_Snippets', 'activate']);
 
 new Individual_JS_Snippets();
+
+
+/**
+ * Add a "JS Snippets" link on the Plugins screen for Skyrocket Script Manager.
+ *
+ * Replace __FILE__ with the path to your main plugin file if placed elsewhere.
+ */
+add_filter(
+    'plugin_action_links_' . plugin_basename(__FILE__),
+    static function (array $links): array {
+        $snippets_url = admin_url('edit.php?post_type=js_snippet');
+        $snippets_link = sprintf(
+            '<a href="%s">%s</a>',
+            esc_url($snippets_url),
+            esc_html__('JS Snippets', 'skyrocket-script-manager')
+        );
+
+        // Prepend before "Deactivate" (or use $links[] = $snippets_link to append at the end).
+        array_unshift($links, $snippets_link);
+
+        return $links;
+    }
+);

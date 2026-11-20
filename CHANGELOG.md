@@ -68,3 +68,6 @@
 ## 1.4.8 - Improve registered trademark default script
 - Improve registered trademark default script
 - Resolve issues in Blocksy menus
+
+## 1.4.9 - Add in JS Snippets link to plugin window
+- Add in JS Snippets link to plugin window
