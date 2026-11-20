@@ -88,3 +88,6 @@
 
 ## 1.5.4 - Bump update
 - Bump update
+
+## 1.5.5 - Move plugin icon images
+- Move plugin icon images
