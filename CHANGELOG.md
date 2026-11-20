@@ -82,3 +82,6 @@
 
 ## 1.5.2 - Add plugin icon
 - Add plugin icon
+
+## 1.5.3 - Fix plugin icon
+- Fix plugin icon

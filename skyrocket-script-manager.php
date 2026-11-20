@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage JavaScript and HTML snippets (with optional CSS, priority ordering, and post/page targeting).
- * Version: 1.5.2
+ * Version: 1.5.3
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Skyrocket Digital Development
@@ -23,11 +23,50 @@ $github_updater_config = [
     'plugin_file' => __FILE__,
 ];
 
-// Icon code
-require_once SRSM_PLUGIN_DIR . 'includes/plugin-icon.php';
-
 // Updater code
 require_once SRSM_PLUGIN_DIR . 'vendor/lavamitts/skyrocket-plugin-updater/src/plugin-updater.php';
+
+/**
+ * Add available plugin icons to update metadata.
+ *
+ * Only registers icon URLs when the corresponding image files exist.
+ */
+add_filter(
+    'pre_set_site_transient_update_plugins',
+    static function ($transient) {
+
+        $plugin_basename = plugin_basename(SRSM_PLUGIN_FILE);
+
+        if (
+            !is_object($transient) ||
+            !isset($transient->response[$plugin_basename])
+        ) {
+            return $transient;
+        }
+
+        $icon_directory = SRSM_PLUGIN_DIR . 'assets/images/';
+        $icon_url = plugin_dir_url(SRSM_PLUGIN_FILE) . 'assets/images/';
+
+        $icons = [];
+
+        foreach ([
+            '1x' => 'icon-128x128.png',
+            '2x' => 'icon-256x256.png',
+        ] as $size => $filename) {
+
+            if (is_file($icon_directory . $filename)) {
+                $icons[$size] = $icon_url . $filename;
+            }
+        }
+
+        if ($icons) {
+            $transient->response[$plugin_basename]->icons = $icons;
+        }
+
+        return $transient;
+    },
+    20
+);
 
 // Remove the temporary configuration variable.
 unset($github_updater_config);
