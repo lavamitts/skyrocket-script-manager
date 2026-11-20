@@ -28,3 +28,7 @@ node_modules/
 
 # Distributions
 dist/
+
+
+# Archived scripts
+/default-scripts/archive/

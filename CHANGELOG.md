@@ -64,3 +64,7 @@
 
 ## 1.4.7 - Add in registered trademark default script
 - Add in registered trademark default script
+
+## 1.4.8 - Improve registered trademark default script
+- Improve registered trademark default script
+- Resolve issues in Blocksy menus
