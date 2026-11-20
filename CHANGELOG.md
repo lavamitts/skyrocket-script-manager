@@ -79,3 +79,6 @@
 - Inclusion of additional fields in the JS Snippets list (type, location)
 - Sortable by all fields
 - Define initial sort order
+
+## 1.5.2 - Add plugin icon
+- Add plugin icon

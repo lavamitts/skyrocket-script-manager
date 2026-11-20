@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Skyrocket Script Manager
  * Description: Manage JavaScript and HTML snippets (with optional CSS, priority ordering, and post/page targeting).
- * Version: 1.5.1
+ * Version: 1.5.2
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Skyrocket Digital Development
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('SRSM_VERSION', '1.5.1');
+define('SRSM_VERSION', '1.5.2');
 define('SRSM_PLUGIN_FILE', __FILE__);
 define('SRSM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -22,6 +22,9 @@ $github_updater_config = [
     'repository' => 'skyrocket-script-manager',
     'plugin_file' => __FILE__,
 ];
+
+// Icon code
+require_once SRSM_PLUGIN_DIR . 'includes/plugin-icon.php';
 
 // Updater code
 require_once SRSM_PLUGIN_DIR . 'vendor/lavamitts/skyrocket-plugin-updater/src/plugin-updater.php';
