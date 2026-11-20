@@ -10,6 +10,7 @@ class Individual_JS_Snippets
     const ASSIGN_META = '_assigned_js_snippets';
     const META_TYPE = '_js_snippet_type';
     const META_PRIORITY = '_js_snippet_priority';
+    const META_LOCATION = '_js_snippet_location';
     const DEFAULT_PRIORITY = 10;
 
     /** @var WP_Post[]|null Per-request cache of published snippets */
@@ -28,9 +29,12 @@ class Individual_JS_Snippets
         add_action('add_meta_boxes', [$this, 'add_snippet_meta_boxes']);
         add_action('save_post_' . self::CPT, [$this, 'save_snippet_meta']);
 
-        // Custom columns & Quick Edit (priority only) on the snippet admin list
+        // Custom columns, sorting & Quick Edit (priority only) on the snippet admin list
         add_filter('manage_edit-' . self::CPT . '_columns', [$this, 'add_snippet_columns'], 20);
+        add_filter('manage_edit-' . self::CPT . '_sortable_columns', [$this, 'add_sortable_columns'], 20);
         add_action('manage_' . self::CPT . '_posts_custom_column', [$this, 'render_snippet_columns'], 10, 2);
+        add_action('pre_get_posts', [$this, 'apply_admin_list_ordering']);
+        add_filter('the_posts', [$this, 'sort_admin_list_posts'], 10, 2);
         add_action('quick_edit_custom_box', [$this, 'render_quick_edit_box'], 10, 2);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_quick_edit_script']);
 
@@ -107,7 +111,7 @@ class Individual_JS_Snippets
             if ($post_id && !is_wp_error($post_id)) {
                 update_post_meta($post_id, '_js_snippet_code', wp_slash($code));
                 update_post_meta($post_id, '_js_snippet_description', 'Default template script installed automatically.');
-                update_post_meta($post_id, '_js_snippet_location', 'footer');
+                update_post_meta($post_id, self::META_LOCATION, 'footer');
                 update_post_meta($post_id, '_js_snippet_target_type', 'sitewide');
                 update_post_meta($post_id, self::META_TYPE, 'js');
                 update_post_meta($post_id, self::META_PRIORITY, self::DEFAULT_PRIORITY);
@@ -135,9 +139,9 @@ class Individual_JS_Snippets
         return (bool) apply_filters('ijs_user_can_manage', $can, $user_id);
     }
 
-    private function get_location($snippet_id)
+    public function get_location($snippet_id)
     {
-        $loc = get_post_meta($snippet_id, '_js_snippet_location', true);
+        $loc = get_post_meta($snippet_id, self::META_LOCATION, true);
         return in_array($loc, ['header', 'body', 'footer'], true) ? $loc : 'footer';
     }
 
@@ -160,6 +164,21 @@ class Individual_JS_Snippets
             return self::DEFAULT_PRIORITY;
         }
         return (int) $raw;
+    }
+
+    private function get_type_sort_rank($type)
+    {
+        return $type === 'html' ? 0 : 1;
+    }
+
+    private function get_location_sort_rank($location)
+    {
+        $ranks = [
+            'header' => 0,
+            'body' => 1,
+            'footer' => 2,
+        ];
+        return isset($ranks[$location]) ? $ranks[$location] : 2;
     }
 
     private function get_assignable_post_types()
@@ -426,7 +445,7 @@ class Individual_JS_Snippets
         if (!in_array($location, ['header', 'body', 'footer'], true)) {
             $location = 'footer';
         }
-        update_post_meta($post_id, '_js_snippet_location', $location);
+        update_post_meta($post_id, self::META_LOCATION, $location);
 
         $target = isset($_POST['js_snippet_target_type']) ? sanitize_text_field(wp_unslash($_POST['js_snippet_target_type'])) : 'sitewide';
         if (!in_array($target, ['sitewide', 'specific'], true)) {
@@ -436,7 +455,7 @@ class Individual_JS_Snippets
     }
 
     /* ---------------------------------------------------------------
-    - Admin list columns & Quick Edit (Priority only)
+    - Admin list columns, sorting & Quick Edit (Priority only)
     - ------------------------------------------------------------- */
 
     public function add_snippet_columns($columns)
@@ -448,11 +467,20 @@ class Individual_JS_Snippets
             $new_columns[$key] = $title;
             if ($key === 'title') {
                 $new_columns['snippet_type'] = 'Type';
+                $new_columns['snippet_location'] = 'Location';
                 $new_columns['snippet_priority'] = 'Priority';
                 $new_columns['snippet_description'] = 'Description';
             }
         }
         return $new_columns;
+    }
+
+    public function add_sortable_columns($columns)
+    {
+        $columns['snippet_type'] = ['snippet_type', false];
+        $columns['snippet_location'] = ['snippet_location', false];
+        $columns['snippet_priority'] = ['snippet_priority', false];
+        return $columns;
     }
 
     public function render_snippet_columns($column, $post_id)
@@ -461,6 +489,9 @@ class Individual_JS_Snippets
             $type = $this->get_snippet_type($post_id);
             $label = $type === 'html' ? 'HTML' : 'JS';
             echo '<span class="srsm-snippet-type" data-type="' . esc_attr($type) . '">' . esc_html($label) . '</span>';
+        } elseif ($column === 'snippet_location') {
+            $location = $this->get_location($post_id);
+            echo '<span class="srsm-snippet-location" data-location="' . esc_attr($location) . '">' . esc_html($location) . '</span>';
         } elseif ($column === 'snippet_priority') {
             $priority = $this->get_snippet_priority($post_id);
             echo '<span class="srsm-snippet-priority" data-priority="' . esc_attr($priority) . '">' . esc_html((string) $priority) . '</span>';
@@ -468,6 +499,93 @@ class Individual_JS_Snippets
             $description = get_post_meta($post_id, '_js_snippet_description', true);
             echo $description ? nl2br(esc_html($description)) : '<span style="color:#72777c;">—</span>';
         }
+    }
+
+    private function is_snippet_admin_list($query)
+    {
+        if (!is_admin() || !$query->is_main_query()) {
+            return false;
+        }
+        $post_type = $query->get('post_type');
+        return $post_type === self::CPT;
+    }
+
+    public function apply_admin_list_ordering($query)
+    {
+        if (!$this->is_snippet_admin_list($query)) {
+            return;
+        }
+
+        $orderby = $query->get('orderby');
+
+        if ($orderby === 'snippet_priority') {
+            $query->set('meta_key', self::META_PRIORITY);
+            $query->set('orderby', 'meta_value_num');
+        } elseif ($orderby === 'snippet_type') {
+            $query->set('meta_key', self::META_TYPE);
+            $query->set('orderby', 'meta_value');
+        } elseif ($orderby === 'snippet_location') {
+            // Custom order (header -> body -> footer) handled in sort_admin_list_posts
+            $query->set('posts_per_page', -1);
+            $query->set('nopaging', true);
+        } elseif (empty($orderby)) {
+            // Default load order: HTML first, then JS; within each, header -> body -> footer; then priority ascending
+            $query->set('posts_per_page', -1);
+            $query->set('nopaging', true);
+        }
+    }
+
+    public function sort_admin_list_posts($posts, $query)
+    {
+        if (!$this->is_snippet_admin_list($query) || empty($posts)) {
+            return $posts;
+        }
+
+        $orderby = $query->get('orderby');
+        $dir = strtoupper((string) $query->get('order')) === 'DESC' ? -1 : 1;
+
+        if ($orderby === 'snippet_location') {
+            usort($posts, function ($a, $b) use ($dir) {
+                $ra = $this->get_location_sort_rank($this->get_location($a->ID));
+                $rb = $this->get_location_sort_rank($this->get_location($b->ID));
+                if ($ra !== $rb) {
+                    return ($ra <=> $rb) * $dir;
+                }
+                return strcmp($a->post_title, $b->post_title);
+            });
+            return $posts;
+        }
+
+        if (empty($orderby)) {
+            usort($posts, function ($a, $b) {
+                $ta = $this->get_type_sort_rank($this->get_snippet_type($a->ID));
+                $tb = $this->get_type_sort_rank($this->get_snippet_type($b->ID));
+                if ($ta !== $tb) {
+                    return $ta <=> $tb;
+                }
+
+                $la = $this->get_location_sort_rank($this->get_location($a->ID));
+                $lb = $this->get_location_sort_rank($this->get_location($b->ID));
+                if ($la !== $lb) {
+                    return $la <=> $lb;
+                }
+
+                $pa = $this->get_snippet_priority($a->ID);
+                $pb = $this->get_snippet_priority($b->ID);
+                if ($pa !== $pb) {
+                    return $pa <=> $pb;
+                }
+
+                $title_cmp = strcasecmp($a->post_title, $b->post_title);
+                if ($title_cmp !== 0) {
+                    return $title_cmp;
+                }
+
+                return $a->ID <=> $b->ID;
+            });
+        }
+
+        return $posts;
     }
 
     public function render_quick_edit_box($column_name, $post_type)
@@ -479,9 +597,7 @@ class Individual_JS_Snippets
         <fieldset class="inline-edit-col-right">
             <div class="inline-edit-col">
                 <label class="inline-edit-group">
-                    <span class="title">
-                        <?php esc_html_e('Priority', 'skyrocket-script-manager'); ?>
-                    </span>
+                    <span class="title"><?php esc_html_e('Priority', 'skyrocket-script-manager'); ?></span>
                     <input type="number" name="js_snippet_priority" class="srsm-quick-edit-priority" step="1" value="10"
                         style="width:6em;">
                 </label>

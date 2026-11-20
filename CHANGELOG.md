@@ -74,3 +74,8 @@
 
 ## 1.5.0 - Complete refactor to include type and priority
 - To cater for the inclusion of header, body and footer HTML and to resequence fragments
+
+## 1.5.1 - Enhance interface usability
+- Inclusion of additional fields in the JS Snippets list (type, location)
+- Sortable by all fields
+- Define initial sort order
