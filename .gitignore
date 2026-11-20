@@ -35,3 +35,4 @@ dist/
 
 # Versioning
 *.old.txt
+*~lock~
